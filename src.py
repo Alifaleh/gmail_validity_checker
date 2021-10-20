@@ -53,3 +53,78 @@ proxyDict = {
             }
 
 r = requests.get(url, headers=headers, proxies=proxyDict)
+
+
+
+
+
+
+import requests
+from bs4 import BeautifulSoup
+import json
+
+
+def is_valid_apple_id(email):
+    headers = {
+        'Host': 'appleid.apple.com',
+        'Cache-Control': 'max-age=0',
+        'Sec-Ch-Ua': '";Not A Brand";v="99", "Chromium";v="94"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-User': '?1',
+        'Sec-Fetch-Dest': 'document',
+        'Referer': 'https://appleid.apple.com/',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Connection': 'close',
+    }
+    response = requests.get('https://appleid.apple.com/', headers=headers, verify=False)
+    soup = BeautifulSoup(response.text, "html.parser")
+    bot_keys = soup.find_all("script", {"id": "boot_args"})[0].get_text()
+    aidsp = response.headers['Set-Cookie'].split(';')[-5].split('=')[1]
+    scnt = json.loads(bot_keys)["direct"]["scnt"]
+    api_key = json.loads(bot_keys)["direct"]["apiKey"]
+    sessionId = json.loads(bot_keys)["direct"]["sessionId"]
+    headers = {
+        'Host': 'appleid.apple.com',
+        'X-Apple-I-Fd-Client-Info': '{"U":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36","L":"en-US","Z":"GMT+03:00","V":"1.1","F":".ta44j1e3NlY5BNlY5BSs5uQ084akJ1FmkxOHxcKB8i.uJtHoqvynx9MsFyxY25BCw0Tf50FL1kb9WDK1civyfw8btTrl7klY5BNleBBNlYCa1nkBMfs.7Sh"}',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'X-Apple-Request-Context': 'create',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Apple-I-Timezone': 'Asia/Baghdad',
+        'Sec-Ch-Ua': '";Not A Brand";v="99", "Chromium";v="94"',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Origin': 'https://appleid.apple.com',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
+        'Referer': 'https://appleid.apple.com/',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Connection': 'close',
+    }
+    headers["X-Apple-Id-Session-Id"] = sessionId
+    headers["Scnt"] = scnt
+    headers["X-Apple-Api-Key"] = api_key
+    cookies = {
+        'idclient': 'web',
+        'dslang': 'US-EN',
+        'site': 'USA',
+        'aidsp': aidsp,
+        'geo': 'IQ',
+    }
+    data = '{"emailAddress":"'+email+'"}'
+    response = requests.post('https://appleid.apple.com/account/validation/appleid', headers=headers, cookies=cookies, data=data, verify=False)
+    return json.loads(response.text)['used']
+
+
+
+print(is_valid_apple_id("alifalih783783333@gmail.com"))
